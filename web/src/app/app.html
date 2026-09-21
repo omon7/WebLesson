@@ -1,0 +1,12 @@
+<div class="container">
+  <h1>Объявления о квартирах</h1>
+
+  <div class="listings">
+    @for (listing of listings(); track listing.id) {
+      <div class="card">
+        <h2>{{ listing.title }}</h2>
+        <p>Цена: {{ listing.price }} $</p>
+      </div>
+    }
+  </div>
+</div>
