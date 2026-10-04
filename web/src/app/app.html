@@ -1,6 +1,8 @@
 <div class="container">
   <h1>Объявления о квартирах</h1>
-
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
   <div class="listings">
     @for (listing of listings(); track listing.id) {
       <div class="card">

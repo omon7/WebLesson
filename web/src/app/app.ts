@@ -1,11 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-
-interface Listing {
-  id: number;
-  title: string;
-  price: number;
-}
+import { Listing } from './listing';
 
 @Component({
   selector: 'app-root',
@@ -16,10 +11,13 @@ export class App {
   private http = inject(HttpClient);
 
   listings = signal<Listing[]>([]);
-
+  error = signal<string | null>(null);
   constructor() {
-    this.http
-      .get<Listing[]>('http://localhost:5165/api/listings')
-      .subscribe(data => this.listings.set(data));
+   this.http
+  .get<Listing[]>('http://localhost:5000/api/listings')
+  .subscribe({
+    next: (data) => this.listings.set(data),
+    error: (err) => this.error.set('Сервер недоступен: ' + err.message),
+  });
   }
 }
