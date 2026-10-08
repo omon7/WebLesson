@@ -2,8 +2,9 @@ export interface Listing {
   id: number;
   title: string;
   price: number;
-  district: string;
+  districtId: number;
+  districtName: string;
   rooms: number;
-  address: string;
+  address: string | null;
   createdAt: string;
 }

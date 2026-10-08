@@ -1,100 +1,88 @@
 using ListingsApi.Contracts;
-using ListingsApi.Models;
 using ListingsApi.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace ListingsApi.Endpoints;
 
 public static class ListingEndpoints
 {
-    public static void MapListingEndpoints(this WebApplication app)
+    public static IEndpointRouteBuilder MapListingEndpoints(
+        this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/listings").WithTags("Listings");
+        var group = app.MapGroup("/api/listings");
 
-        // GET /api/listings?district=Чиланзар&maxPrice=50000
-        group.MapGet("/", (ListingStore store, string? district, decimal? maxPrice) =>
+        // GET /api/listings
+        // GET /api/listings?districtId=1&maxPrice=50000
+        group.MapGet("/", async (
+            int? districtId,
+            decimal? maxPrice,
+            ListingService service) =>
         {
-            var items = store.GetAll().AsEnumerable();
-
-            if (district is not null)
-                items = items.Where(l => l.District == district);
-
-            if (maxPrice is not null)
-                items = items.Where(l => l.Price <= maxPrice);
-
-            return TypedResults.Ok(items.Select(ToResponse));
+            var items = await service.GetAllAsync(districtId, maxPrice);
+            return Results.Ok(items);
         })
         .WithName("GetListings")
-        .WithSummary("Список объявлений с фильтром по району и максимальной цене");
+        .WithSummary("Список объявлений с фильтром");
 
-        // GET /api/listings/7
-        group.MapGet(
-            "/{id:int}",
-            Results<Ok<ListingResponse>, NotFound> (int id, ListingStore store) =>
-                store.Get(id) is { } listing
-                    ? TypedResults.Ok(ToResponse(listing))
-                    : TypedResults.NotFound())
-        .WithName("GetListing")
-        .WithSummary("Одно объявление по id");
+        // GET /api/listings/1
+        group.MapGet("/{id:int}", async (
+            int id,
+            ListingService service) =>
+        {
+            var listing = await service.GetAsync(id);
+
+            return listing is not null
+                ? Results.Ok(listing)
+                : Results.NotFound();
+        })
+        .WithName("GetListing");
 
         // POST /api/listings
-        group.MapPost(
-            "/",
-            Results<Created<ListingResponse>, BadRequest<string>>
-            (CreateListingRequest request, ListingStore store) =>
+        group.MapPost("/", async (
+            CreateListingRequest request,
+            ListingService service) =>
         {
-            if (string.IsNullOrWhiteSpace(request.Title))
-                return TypedResults.BadRequest("Поле title обязательно");
+            var listing = await service.CreateAsync(request);
 
-            if (request.Price <= 0)
-                return TypedResults.BadRequest("Поле price должно быть больше 0");
+            if (listing is null)
+                return Results.BadRequest("Указанный район не существует.");
 
-            if (request.Rooms is < 1 or > 10)
-                return TypedResults.BadRequest("Поле rooms — от 1 до 10");
-
-            var created = store.Add(request);
-
-            return TypedResults.Created(
-                $"/api/listings/{created.Id}",
-                ToResponse(created));
+            return Results.Created(
+                $"/api/listings/{listing.Id}",
+                listing);
         })
-        .WithName("CreateListing")
-        .WithSummary("Создать объявление");
+        .WithName("CreateListing");
 
-        // PUT /api/listings/7
-        group.MapPut(
-            "/{id:int}",
-            Results<NoContent, NotFound, BadRequest<string>>
-            (int id, UpdateListingRequest request, ListingStore store) =>
+        // PUT /api/listings/1
+        group.MapPut("/{id:int}", async (
+            int id,
+            UpdateListingRequest request,
+            ListingService service) =>
         {
-            if (string.IsNullOrWhiteSpace(request.Title) || request.Price <= 0)
-                return TypedResults.BadRequest("title обязателен, price > 0");
+            var updated = await service.UpdateAsync(id, request);
 
-            return store.Update(id, request)
-                ? TypedResults.NoContent()
-                : TypedResults.NotFound();
+            return updated
+                ? Results.NoContent()
+                : Results.NotFound();
         })
-        .WithName("UpdateListing")
-        .WithSummary("Заменить объявление целиком");
+        .WithName("UpdateListing");
 
-        // DELETE /api/listings/7
-        group.MapDelete(
-            "/{id:int}",
-            Results<NoContent, NotFound> (int id, ListingStore store) =>
-                store.Delete(id)
-                    ? TypedResults.NoContent()
-                    : TypedResults.NotFound())
-        .WithName("DeleteListing")
-        .WithSummary("Удалить объявление");
+        // DELETE /api/listings/1
+        group.MapDelete("/{id:int}", async (
+            int id,
+            ListingService service) =>
+        {
+            var deleted = await service.DeleteAsync(id);
+
+            return deleted
+                ? Results.NoContent()
+                : Results.NotFound();
+        })
+        .WithName("DeleteListing");
+group.MapGet("/bad", async (ListingService service) =>
+{
+    return await service.BadListAsync();
+})
+.WithName("BadList");
+        return app;
     }
-
-    private static ListingResponse ToResponse(Listing l) =>
-        new(
-            l.Id,
-            l.Title,
-            l.Price,
-            l.District,
-            l.Rooms,
-            l.Address,
-            l.CreatedAt);
 }

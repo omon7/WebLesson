@@ -4,24 +4,29 @@ namespace ListingsApi.Contracts;
 public record CreateListingRequest(
     string Title,
     decimal Price,
-    string District,
+    int DistrictId,
     int Rooms,
-    string Address);
+    string? Address);
 
 // Что клиент присылает при полной замене
 public record UpdateListingRequest(
     string Title,
     decimal Price,
-    string District,
+    int DistrictId,
     int Rooms,
-    string Address);
+    string? Address);
 
 // Что клиент получает
 public record ListingResponse(
     int Id,
     string Title,
     decimal Price,
-    string District,
     int Rooms,
-    string Address,
+    int DistrictId,
+    string DistrictName,
+    string? Address,
     DateTime CreatedAt);
+    public record DistrictResponse(
+    int Id,
+    string Name,
+    int ListingsCount);
