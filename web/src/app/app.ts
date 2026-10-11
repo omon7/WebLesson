@@ -1,23 +1,72 @@
-import { Component, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Listing } from './listing';
-
+import { Component, computed, signal } from '@angular/core';
+import { Listing, ListingFilter as FilterValue } from './models/listing';
+import { MOCK_LISTINGS } from './data/mock-listings';
+import { ListingList } from './listing-list/listing-list';
+import { ListingFilter, DistrictOption } from './listing-filter/listing-filter';
+import { ListingDetails } from './listing-details/listing-details';
 @Component({
   selector: 'app-root',
+imports: [ListingList, ListingFilter, ListingDetails],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
-  private http = inject(HttpClient);
+  listings = signal<Listing[]>(MOCK_LISTINGS);
 
-  listings = signal<Listing[]>([]);
-  error = signal<string | null>(null);
-  constructor() {
-   this.http
-  .get<Listing[]>('http://localhost:5000/api/listings')
-  .subscribe({
-    next: (data) => this.listings.set(data),
-    error: (err) => this.error.set('Сервер недоступен: ' + err.message),
+  selectedId = signal<number | null>(null);
+
+  filter = signal<FilterValue>({
+    districtId: null,
+    maxPrice: null
   });
+
+  selectedListing = computed(() =>
+    this.listings().find(l => l.id === this.selectedId()) ?? null
+  );
+
+  districts = computed<DistrictOption[]>(() => {
+    const map = new Map<number, string>();
+
+    for (const l of this.listings()) {
+      map.set(l.districtId, l.districtName);
+    }
+
+    return [...map]
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  });
+
+  filtered = computed(() => {
+    const { districtId, maxPrice } = this.filter();
+
+    return this.listings().filter(l =>
+      (districtId === null || l.districtId === districtId) &&
+      (maxPrice === null || l.price <= maxPrice)
+    );
+  });
+
+  onSelect(id: number) {
+    this.selectedId.update(current => current === id ? null : id);
+  }
+
+  onFilter(value: FilterValue) {
+    this.filter.set(value);
+    this.selectedId.set(null);
+  }
+
+  addTestListing() {
+    this.listings.update(items => [
+      ...items,
+      {
+        id: Math.max(0, ...items.map(l => l.id)) + 1,
+        title: 'Тестовое объявление',
+        price: 50000,
+        rooms: 2,
+        districtId: 1,
+        districtName: 'Чиланзар',
+        createdAt: new Date().toISOString(),
+        address: 'Тестовый адрес'
+      }
+    ]);
   }
 }
