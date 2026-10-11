@@ -1,12 +1,17 @@
 <form class="filter" (submit)="$event.preventDefault()">
   <label>
     Район
-    <select [value]="districtId() ?? ''" (change)="onDistrict($event)">
+<select
+  [value]="districtId() ?? ''"
+  (change)="onDistrict($event)"
+  id="districtId"
+  name="districtId">
         <option value="">Все районы</option>
       @for (d of districts(); track d.id) {
         <option [value]="d.id">{{ d.name }}</option>
       }
     </select>
+    
   </label>
 
   <label>
@@ -18,6 +23,7 @@
       placeholder="любая"
       [value]="maxPrice() ?? ''"
       (input)="onPrice($event)"
+      id="maxPrice" name="maxPrice"
     />
   </label>
 
