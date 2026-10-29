@@ -1,0 +1,40 @@
+<p>
+  <a routerLink="/">← К списку</a>
+</p>
+
+@if (listing.isLoading()) {
+  <p class="muted">Загрузка…</p>
+} @else if (listing.error(); as err) {
+  <div class="error-box">
+    <p>{{ err | errorMessage }}</p>
+
+    @if (!isNotFoundError(err)) {
+      <button
+        type="button"
+        (click)="listing.reload()"
+      >
+        Повторить
+      </button>
+    }
+  </div>
+} @else if (listing.hasValue()) {
+  <app-listing-details
+    [listing]="listing.value()"
+    (closed)="null"
+  />
+
+  <div class="actions">
+    <button
+      type="button"
+      class="danger"
+      (click)="remove()"
+      [disabled]="deleting()"
+    >
+      {{ deleting() ? 'Удаляем…' : 'Удалить объявление' }}
+    </button>
+
+    @if (deleteError(); as msg) {
+      <p class="error">{{ msg }}</p>
+    }
+  </div>
+}

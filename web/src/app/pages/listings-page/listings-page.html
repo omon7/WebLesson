@@ -1,0 +1,37 @@
+<div class="page-heading">
+  <h1>Объявления</h1>
+
+  <button
+    type="button"
+    (click)="refresh()"
+    [disabled]="listings.isLoading() || districts.isLoading()"
+  >
+    Обновить
+  </button>
+</div>
+
+<app-listing-filter
+  [districts]="districts.value()"
+  (filterChange)="onFilter($event)"
+/>
+
+@if (listings.isLoading()) {
+  <p class="muted">Загрузка объявлений…</p>
+} @else if (listings.error(); as err) {
+  <div class="error-box">
+    <p>{{ err | errorMessage }}</p>
+    <button
+      type="button"
+      (click)="listings.reload()"
+    >
+      Повторить
+    </button>
+  </div>
+} @else if (listings.hasValue()) {
+  <app-listing-list
+    [listings]="listings.value()"
+    [total]="total()"
+    [selectedId]="null"
+    (selected)="null"
+  />
+}

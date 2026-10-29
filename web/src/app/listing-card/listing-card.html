@@ -20,10 +20,12 @@
       {{ listing().createdAt | date:'d MMM yyyy' }}
     </time>
 
-    <button
-      type="button"
-      (click)="choose(); $event.stopPropagation()">
-      Подробнее
-    </button>
+    <a
+  [routerLink]="['/listings', listing().id]"
+  class="more"
+  (click)="$event.stopPropagation()"
+>
+  Подробнее
+</a>
   </footer>
 </article>

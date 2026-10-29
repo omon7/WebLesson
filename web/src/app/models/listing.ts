@@ -13,3 +13,8 @@ export interface ListingFilter {
   districtId: number | null;
   maxPrice: number | null;
 }
+export interface District {
+  id: number;
+  name: string;
+  listingsCount: number;
+}

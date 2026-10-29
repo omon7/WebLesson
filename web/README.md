@@ -57,3 +57,25 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Lesson 5 — Angular + API
+
+### Запуск проекта
+
+1. Запустите backend из папки api:
+
+   dotnet run --urls http://localhost:5165
+
+2. Запустите frontend из папки web:
+
+   ng serve
+
+3. Откройте http://localhost:4200/
+
+### Настройка API
+
+Адрес API задаётся в src/environments/environment.ts
+и src/environments/environment.development.ts
+через свойство apiUrl.
+
+Backend должен разрешать CORS для
+http://localhost:4200.

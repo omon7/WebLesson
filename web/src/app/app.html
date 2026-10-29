@@ -1,23 +1,7 @@
+<header class="topbar">
+  <a routerLink="/" class="brand">Locus · объявления</a>
+</header>
+
 <main class="container">
-  <h1>Объявления о квартирах</h1>
-<button type="button" (click)="addTestListing()">
-  Добавить тестовое объявление
-</button>
-  <app-listing-filter
-    [districts]="districts()"
-    (filterChange)="onFilter($event)" />
-
-  <div class="layout" [class.with-panel]="selectedListing() !== null">
-    <app-listing-list
-      [listings]="filtered()"
-      [total]="listings().length"
-      [selectedId]="selectedId()"
-      (selected)="onSelect($event)" />
-
-    @if (selectedListing(); as item) {
-      <app-listing-details
-        [listing]="item"
-        (closed)="selectedId.set(null)" />
-    }
-  </div>
+  <router-outlet />
 </main>

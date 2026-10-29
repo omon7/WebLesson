@@ -1,10 +1,11 @@
 import { Component, computed, input, output } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { Listing } from '../models/listing';
 
 @Component({
   selector: 'app-listing-card',
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, RouterLink],
   templateUrl: './listing-card.html',
   styleUrl: './listing-card.css'
 })
