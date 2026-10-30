@@ -26,3 +26,23 @@
   margin: 24px auto;
   padding: 0 16px;
 }
+.nav {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.nav a,
+.link {
+  color: #e5e7eb;
+  text-decoration: none;
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.who {
+  color: #9ca3af;
+  font-size: 14px;
+}

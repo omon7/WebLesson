@@ -5,6 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ListingsApi.Services;
 
+public enum ChangeResult
+{
+    Ok,
+    NotFound,
+    Forbidden
+}
+
 public class ListingService
 {
     private readonly AppDbContext db;
@@ -36,6 +43,19 @@ public class ListingService
         return items.Select(ToResponse).ToList();
     }
 
+    // Объявления текущего пользователя
+    public async Task<List<ListingResponse>> GetMineAsync(int userId)
+    {
+        var listings = await db.Listings
+            .AsNoTracking()
+            .Include(x => x.District)
+            .Where(x => x.OwnerId == userId)
+            .OrderBy(x => x.Id)
+            .ToListAsync();
+
+        return listings.Select(ToResponse).ToList();
+    }
+
     public async Task<ListingResponse?> GetAsync(int id)
     {
         var listing = await db.Listings
@@ -49,7 +69,8 @@ public class ListingService
     }
 
     public async Task<ListingResponse?> CreateAsync(
-        CreateListingRequest request)
+        CreateListingRequest request,
+        int ownerId)
     {
         var districtExists = await db.Districts
             .AnyAsync(x => x.Id == request.DistrictId);
@@ -64,7 +85,8 @@ public class ListingService
             Rooms = request.Rooms,
             DistrictId = request.DistrictId,
             Address = request.Address,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            OwnerId = ownerId
         };
 
         db.Listings.Add(listing);
@@ -78,21 +100,18 @@ public class ListingService
         return ToResponse(created);
     }
 
-    public async Task<bool> UpdateAsync(
+    public async Task<ChangeResult> UpdateAsync(
         int id,
-        UpdateListingRequest request)
+        UpdateListingRequest request,
+        int userId)
     {
-        var listing = await db.Listings
-            .FirstOrDefaultAsync(x => x.Id == id);
+        var listing = await db.Listings.FindAsync(id);
 
         if (listing is null)
-            return false;
+            return ChangeResult.NotFound;
 
-        var districtExists = await db.Districts
-            .AnyAsync(x => x.Id == request.DistrictId);
-
-        if (!districtExists)
-            return false;
+        if (listing.OwnerId != userId)
+            return ChangeResult.Forbidden;
 
         listing.Title = request.Title;
         listing.Price = request.Price;
@@ -102,21 +121,25 @@ public class ListingService
 
         await db.SaveChangesAsync();
 
-        return true;
+        return ChangeResult.Ok;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<ChangeResult> DeleteAsync(
+        int id,
+        int userId)
     {
-        var listing = await db.Listings
-            .FindAsync(id);
+        var listing = await db.Listings.FindAsync(id);
 
         if (listing is null)
-            return false;
+            return ChangeResult.NotFound;
+
+        if (listing.OwnerId != userId)
+            return ChangeResult.Forbidden;
 
         db.Listings.Remove(listing);
         await db.SaveChangesAsync();
 
-        return true;
+        return ChangeResult.Ok;
     }
 
     private static ListingResponse ToResponse(Listing listing)
@@ -129,17 +152,18 @@ public class ListingService
             listing.DistrictId,
             listing.District?.Name ?? "",
             listing.Address,
-            listing.CreatedAt);
+            listing.CreatedAt,
+            listing.OwnerId);
     }
 
- public async Task<List<string>> BadListAsync()
-{
-    var listings = await db.Listings
-        .Include(l => l.District)
-        .ToListAsync();
+    public async Task<List<string>> BadListAsync()
+    {
+        var listings = await db.Listings
+            .Include(l => l.District)
+            .ToListAsync();
 
-    return listings
-        .Select(l => $"{l.Title} — {l.District!.Name}")
-        .ToList();
-}
+        return listings
+            .Select(l => $"{l.Title} — {l.District!.Name}")
+            .ToList();
+    }
 }

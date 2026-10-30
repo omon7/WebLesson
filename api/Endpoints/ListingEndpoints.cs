@@ -1,6 +1,10 @@
+using System.Security.Claims;
+
+using ListingsApi.Auth;
 using ListingsApi.Contracts;
 using ListingsApi.Services;
 using ListingsApi.Validators;
+
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace ListingsApi.Endpoints;
@@ -12,8 +16,7 @@ public static class ListingEndpoints
     {
         var group = app.MapGroup("/api/listings");
 
-        // GET /api/listings
-        // GET /api/listings?districtId=1&maxPrice=50000
+        // GET /api/listings — публичный список
         group.MapGet("/", async (
             int? districtId,
             decimal? maxPrice,
@@ -24,8 +27,18 @@ public static class ListingEndpoints
         })
         .WithName("GetListings")
         .WithSummary("Список объявлений с фильтром");
-
-        // GET /api/listings/1
+// GET /api/listings/mine — мои объявления
+group.MapGet("/mine", async (
+    ClaimsPrincipal user,
+    ListingService service) =>
+{
+    var items = await service.GetMineAsync(user.GetUserId());
+    return Results.Ok(items);
+})
+.RequireAuthorization()
+.WithName("GetMyListings")
+.WithSummary("Объявления текущего пользователя");
+        // GET /api/listings/1 — публичное объявление
         group.MapGet("/{id:int}", async (
             int id,
             ListingService service) =>
@@ -38,12 +51,15 @@ public static class ListingEndpoints
         })
         .WithName("GetListing");
 
-        // POST /api/listings
+        // POST /api/listings — создание только авторизованным
         group.MapPost("/", async Task<Results<Created<ListingResponse>, ValidationProblem>>(
             CreateListingRequest request,
+            ClaimsPrincipal user,
             ListingService service) =>
         {
-            var created = await service.CreateAsync(request);
+            var created = await service.CreateAsync(
+                request,
+                user.GetUserId());
 
             if (created is null)
             {
@@ -58,39 +74,61 @@ public static class ListingEndpoints
                 $"/api/listings/{created.Id}",
                 created);
         })
+        .RequireAuthorization()
         .AddEndpointFilter<ValidationFilter<CreateListingRequest>>()
         .WithName("CreateListing");
 
-        // PUT /api/listings/1
-        group.MapPut("/{id:int}", async Task<Results<NoContent, NotFound>>(
+        // PUT /api/listings/1 — изменение только автором
+        group.MapPut("/{id:int}", async Task<Results<NoContent, NotFound, ForbidHttpResult>>(
             int id,
             UpdateListingRequest request,
+            ClaimsPrincipal user,
             ListingService service) =>
         {
-            var updated = await service.UpdateAsync(id, request);
+            return await service.UpdateAsync(
+                id,
+                request,
+                user.GetUserId()) switch
+            {
+                ChangeResult.Ok =>
+                    TypedResults.NoContent(),
 
-            return updated
-                ? TypedResults.NoContent()
-                : TypedResults.NotFound();
+                ChangeResult.NotFound =>
+                    TypedResults.NotFound(),
+
+                _ =>
+                    TypedResults.Forbid()
+            };
         })
+        .RequireAuthorization()
         .AddEndpointFilter<ValidationFilter<UpdateListingRequest>>()
         .ProducesValidationProblem()
         .WithName("UpdateListing");
 
-        // DELETE /api/listings/1
-        group.MapDelete("/{id:int}", async (
+        // DELETE /api/listings/1 — удаление только автором
+        group.MapDelete("/{id:int}", async Task<Results<NoContent, NotFound, ForbidHttpResult>>(
             int id,
+            ClaimsPrincipal user,
             ListingService service) =>
         {
-            var deleted = await service.DeleteAsync(id);
+            return await service.DeleteAsync(
+                id,
+                user.GetUserId()) switch
+            {
+                ChangeResult.Ok =>
+                    TypedResults.NoContent(),
 
-            return deleted
-                ? Results.NoContent()
-                : Results.NotFound();
+                ChangeResult.NotFound =>
+                    TypedResults.NotFound(),
+
+                _ =>
+                    TypedResults.Forbid()
+            };
         })
+        .RequireAuthorization()
         .WithName("DeleteListing");
 
-        // Тестовый endpoint
+        // Тестовый endpoint — сохраняем
         group.MapGet("/bad", async (ListingService service) =>
         {
             return await service.BadListAsync();

@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ListingsApi.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options)
+    : DbContext(options)
 {
     public DbSet<District> Districts => Set<District>();
     public DbSet<Listing> Listings => Set<Listing>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -28,14 +30,31 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             e.Property(l => l.Price)
                 .HasConversion<double>();
-                
-e.Property(l => l.Address)
-    .HasMaxLength(300);
+
+            e.Property(l => l.Address)
+                .HasMaxLength(300);
+
             e.HasOne(l => l.District)
                 .WithMany(d => d.Listings)
                 .HasForeignKey(l => l.DistrictId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        b.Entity<User>(e =>
+        {
+            e.Property(u => u.Email)
+                .HasMaxLength(256)
+                .IsRequired();
+
+            e.HasIndex(u => u.Email)
+                .IsUnique();
+        });
+
+        b.Entity<Listing>()
+            .HasOne(l => l.Owner)
+            .WithMany(u => u.Listings)
+            .HasForeignKey(l => l.OwnerId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         b.Entity<District>().HasData(
             new District { Id = 1, Name = "Чиланзар" },
@@ -43,7 +62,8 @@ e.Property(l => l.Address)
             new District { Id = 3, Name = "Мирзо-Улугбек" }
         );
 
-        var seedDate = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        var seedDate = new DateTime(
+            2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
 
         b.Entity<Listing>().HasData(
             new Listing

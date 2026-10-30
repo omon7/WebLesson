@@ -69,6 +69,9 @@ namespace api.Migrations
                     b.Property<int>("DistrictId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("OwnerId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<double>("Price")
                         .HasColumnType("REAL");
 
@@ -83,6 +86,8 @@ namespace api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DistrictId");
+
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("Listings");
 
@@ -116,6 +121,32 @@ namespace api.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ListingsApi.Data.Entities.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+                });
+
             modelBuilder.Entity("ListingsApi.Data.Entities.Listing", b =>
                 {
                     b.HasOne("ListingsApi.Data.Entities.District", "District")
@@ -124,10 +155,22 @@ namespace api.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("ListingsApi.Data.Entities.User", "Owner")
+                        .WithMany("Listings")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("District");
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("ListingsApi.Data.Entities.District", b =>
+                {
+                    b.Navigation("Listings");
+                });
+
+            modelBuilder.Entity("ListingsApi.Data.Entities.User", b =>
                 {
                     b.Navigation("Listings");
                 });

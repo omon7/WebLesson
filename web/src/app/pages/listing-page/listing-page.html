@@ -23,24 +23,24 @@
     (closed)="null"
   />
 
- <div class="actions">
-  <a [routerLink]="['/listings', id(), 'edit']" class="btn">
-    Редактировать
-  </a>
+  @if (canEdit()) {
+    <div class="actions">
+      <a [routerLink]="['/listings', id(), 'edit']" class="btn">
+        Редактировать
+      </a>
 
-  <button
-    type="button"
-    class="danger"
-    (click)="remove()"
-    [disabled]="deleting()"
-  >
-    {{ deleting() ? 'Удаляем…' : 'Удалить объявление' }}
-  </button>
+      <button
+        type="button"
+        class="danger"
+        (click)="remove()"
+        [disabled]="deleting()"
+      >
+        {{ deleting() ? 'Удаляем…' : 'Удалить объявление' }}
+      </button>
 
-  @if (deleteError(); as msg) {
-    <p class="error">{{ msg }}</p>
+      @if (deleteError(); as msg) {
+        <p class="error">{{ msg }}</p>
+      }
+    </div>
   }
-</div>
-    
-  }
-
+}

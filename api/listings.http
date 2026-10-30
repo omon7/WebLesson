@@ -134,3 +134,54 @@ Content-Type: application/json
   "districtId": 1,
   "address": "Тестовый адрес"
 }
+### Регистрация пользователя
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "Aziz@Example.uz",
+  "password": "secret123"
+}
+###
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "aziz@example.uz",
+  "password": "secret123"
+}
+
+###
+### Текущий пользователь
+GET {{host}}/api/auth/me
+Authorization: Bearer {{login.response.body.$.token}}
+### Неверный пароль
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "aziz@example.uz",
+  "password": "wrong-pass1"
+}
+### Проверка /me без токена
+GET {{host}}/api/auth/me
+### Проверка слабого пароля
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "weak@example.uz",
+  "password": "short"
+}
+### Создание объявления без токена — ожидаем 401
+POST {{host}}/api/listings
+Content-Type: application/json
+
+{
+  "title": "Тестовое объявление",
+  "price": 50000,
+  "rooms": 2,
+  "districtId": 1,
+  "address": "Ташкент"
+}

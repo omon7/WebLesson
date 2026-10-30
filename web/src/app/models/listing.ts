@@ -7,6 +7,7 @@ export interface Listing {
   districtName: string;
   address?: string | null;
   createdAt: string;
+  ownerId: number | null;
 }
 
 export interface ListingFilter {

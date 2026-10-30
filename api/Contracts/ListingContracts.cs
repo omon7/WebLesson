@@ -34,7 +34,8 @@ public record ListingResponse(
     int DistrictId,
     string DistrictName,
     string? Address,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    int? OwnerId
 );
 
 public record DistrictResponse(

@@ -1,4 +1,11 @@
-import { Component, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  signal
+} from '@angular/core';
+
 import {
   httpResource,
   HttpErrorResponse
@@ -9,6 +16,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { Listing } from '../../models/listing';
 import { ListingApi } from '../../services/listing-api';
+import { AuthService } from '../../services/auth.service';
 
 import {
   ErrorMessagePipe,
@@ -30,11 +38,18 @@ import { ListingDetails } from '../../listing-details/listing-details';
 export class ListingPage {
   private api = inject(ListingApi);
   private router = inject(Router);
+  private auth = inject(AuthService);
 
   id = input.required<string>();
 
   listing = httpResource<Listing>(
     () => this.api.listingUrl(this.id())
+  );
+
+  // Показываем кнопки только владельцу объявления
+  canEdit = computed(() =>
+    this.listing.hasValue() &&
+    this.listing.value().ownerId === this.auth.userId()
   );
 
   deleting = signal(false);
