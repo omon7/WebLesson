@@ -1,15 +1,25 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { environment } from '../../environments/environment';
-import { District, Listing, ListingFilter } from '../models/listing';
 
-@Injectable({ providedIn: 'root' })
+import { environment } from '../../environments/environment';
+
+import {
+  District,
+  Listing,
+  ListingFilter,
+  ListingRequest
+} from '../models/listing';
+
+@Injectable({
+  providedIn: 'root'
+})
 export class ListingApi {
   private http = inject(HttpClient);
   private base = environment.apiUrl;
 
   listingsUrl = `${this.base}/api/listings`;
   districtsUrl = `${this.base}/api/districts`;
+
   listingUrl = (id: number | string) =>
     `${this.base}/api/listings/${id}`;
 
@@ -29,7 +39,9 @@ export class ListingApi {
 
   getAll(filter: ListingFilter) {
     return this.http.get<Listing[]>(this.listingsUrl, {
-      params: new HttpParams({ fromObject: this.toParams(filter) })
+      params: new HttpParams({
+        fromObject: this.toParams(filter)
+      })
     });
   }
 
@@ -43,5 +55,13 @@ export class ListingApi {
 
   delete(id: number) {
     return this.http.delete<void>(this.listingUrl(id));
+  }
+
+  create(r: ListingRequest) {
+    return this.http.post<Listing>(this.listingsUrl, r);
+  }
+
+  update(id: number, r: ListingRequest) {
+    return this.http.put<void>(this.listingUrl(id), r);
   }
 }

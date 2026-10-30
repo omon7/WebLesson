@@ -79,3 +79,25 @@ For more information on using the Angular CLI, including detailed command refere
 
 Backend должен разрешать CORS для
 http://localhost:4200.
+## Валидация объявлений
+
+Для проверки данных используется FluentValidation.
+
+- Заголовок: от 5 до 200 символов.
+- Цена: больше 0.
+- Комнаты: от 1 до 10.
+- Адрес: не более 300 символов.
+- Район должен существовать в базе данных.
+
+При ошибках API возвращает HTTP 400 в формате ProblemDetails.
+
+Пример ошибки:
+
+{
+  "errors": {
+    "title": ["Не короче 5 символов"]
+  }
+}
+
+POST /api/listings — создание объявления.
+PUT /api/listings/{id} — редактирование объявления.

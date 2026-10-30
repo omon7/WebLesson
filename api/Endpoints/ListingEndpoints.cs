@@ -1,5 +1,7 @@
 using ListingsApi.Contracts;
 using ListingsApi.Services;
+using ListingsApi.Validators;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace ListingsApi.Endpoints;
 
@@ -37,23 +39,30 @@ public static class ListingEndpoints
         .WithName("GetListing");
 
         // POST /api/listings
-        group.MapPost("/", async (
+        group.MapPost("/", async Task<Results<Created<ListingResponse>, ValidationProblem>>(
             CreateListingRequest request,
             ListingService service) =>
         {
-            var listing = await service.CreateAsync(request);
+            var created = await service.CreateAsync(request);
 
-            if (listing is null)
-                return Results.BadRequest("Указанный район не существует.");
+            if (created is null)
+            {
+                return TypedResults.ValidationProblem(
+                    new Dictionary<string, string[]>
+                    {
+                        ["districtId"] = ["Район не найден"]
+                    });
+            }
 
-            return Results.Created(
-                $"/api/listings/{listing.Id}",
-                listing);
+            return TypedResults.Created(
+                $"/api/listings/{created.Id}",
+                created);
         })
+        .AddEndpointFilter<ValidationFilter<CreateListingRequest>>()
         .WithName("CreateListing");
 
         // PUT /api/listings/1
-        group.MapPut("/{id:int}", async (
+        group.MapPut("/{id:int}", async Task<Results<NoContent, NotFound>>(
             int id,
             UpdateListingRequest request,
             ListingService service) =>
@@ -61,9 +70,11 @@ public static class ListingEndpoints
             var updated = await service.UpdateAsync(id, request);
 
             return updated
-                ? Results.NoContent()
-                : Results.NotFound();
+                ? TypedResults.NoContent()
+                : TypedResults.NotFound();
         })
+        .AddEndpointFilter<ValidationFilter<UpdateListingRequest>>()
+        .ProducesValidationProblem()
         .WithName("UpdateListing");
 
         // DELETE /api/listings/1
@@ -78,11 +89,14 @@ public static class ListingEndpoints
                 : Results.NotFound();
         })
         .WithName("DeleteListing");
-group.MapGet("/bad", async (ListingService service) =>
-{
-    return await service.BadListAsync();
-})
-.WithName("BadList");
+
+        // Тестовый endpoint
+        group.MapGet("/bad", async (ListingService service) =>
+        {
+            return await service.BadListAsync();
+        })
+        .WithName("BadList");
+
         return app;
     }
 }

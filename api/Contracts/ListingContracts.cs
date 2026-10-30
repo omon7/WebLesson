@@ -1,22 +1,31 @@
 namespace ListingsApi.Contracts;
 
-// Что клиент присылает при создании
+// Общие поля для создания и редактирования объявления
+public interface IListingFields
+{
+    string Title { get; }
+    decimal Price { get; }
+    int Rooms { get; }
+    int DistrictId { get; }
+    string? Address { get; }
+}
+
 public record CreateListingRequest(
     string Title,
     decimal Price,
-    int DistrictId,
     int Rooms,
-    string? Address);
+    int DistrictId,
+    string? Address
+) : IListingFields;
 
-// Что клиент присылает при полной замене
 public record UpdateListingRequest(
     string Title,
     decimal Price,
-    int DistrictId,
     int Rooms,
-    string? Address);
+    int DistrictId,
+    string? Address
+) : IListingFields;
 
-// Что клиент получает
 public record ListingResponse(
     int Id,
     string Title,
@@ -25,8 +34,11 @@ public record ListingResponse(
     int DistrictId,
     string DistrictName,
     string? Address,
-    DateTime CreatedAt);
-    public record DistrictResponse(
+    DateTime CreatedAt
+);
+
+public record DistrictResponse(
     int Id,
     string Name,
-    int ListingsCount);
+    int ListingsCount
+);

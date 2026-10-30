@@ -5,16 +5,26 @@ export interface Listing {
   rooms: number;
   districtId: number;
   districtName: string;
+  address?: string | null;
   createdAt: string;
-  address?: string;
 }
 
 export interface ListingFilter {
   districtId: number | null;
   maxPrice: number | null;
 }
+
 export interface District {
   id: number;
   name: string;
   listingsCount: number;
+}
+
+// Данные для создания и редактирования объявления
+export interface ListingRequest {
+  title: string;
+  price: number;
+  rooms: number;
+  districtId: number;
+  address: string | null;
 }

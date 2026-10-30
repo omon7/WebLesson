@@ -1,4 +1,4 @@
-@host = http://localhost:5000
+@host = http://localhost:5165
 
 ### Список
 GET {{host}}/api/listings
@@ -50,3 +50,87 @@ Content-Type: application/json
 
 ### Удалить — ожидаем 204
 DELETE {{host}}/api/listings/3
+### Тест 1. Все поля неправильные — ожидаем 400
+POST {{host}}/api/listings
+Content-Type: application/json
+
+{
+  "title": "",
+  "price": 0,
+  "rooms": 0,
+  "districtId": 0
+}
+### Тест 2. Пробелы в заголовке и 15 комнат — ожидаем 400
+POST {{host}}/api/listings
+Content-Type: application/json
+
+{
+  "title": "         ",
+  "price": 500,
+  "rooms": 15,
+  "districtId": 1
+}
+### Тест 3. Несуществующий район — ожидаем 400
+POST {{host}}/api/listings
+Content-Type: application/json
+
+{
+  "title": "Квартира",
+  "price": 500,
+  "rooms": 2,
+  "districtId": 999
+}
+### Тест 4. Неверный тип цены — ожидаем 400
+POST {{host}}/api/listings
+Content-Type: application/json
+
+{
+  "title": "Квартира",
+  "price": "abc",
+  "rooms": 2,
+  "districtId": 1
+}
+### Тест 5. Правильное объявление — ожидаем 201
+POST {{host}}/api/listings
+Content-Type: application/json
+
+{
+  "title": "2-комнатная у метро",
+  "price": 45000,
+  "rooms": 2,
+  "districtId": 1,
+  "address": "ул. Бунёдкор, 5"
+}
+### Тест 6. Неправильный заголовок при изменении — ожидаем 400
+PUT {{host}}/api/listings/10
+Content-Type: application/json
+
+{
+  "title": "Дом",
+  "price": 45000,
+  "rooms": 2,
+  "districtId": 1,
+  "address": "ул. Бунёдкор, 5"
+}
+### Тест 7. Изменение несуществующего объявления — ожидаем 404
+PUT {{host}}/api/listings/999
+Content-Type: application/json
+
+{
+  "title": "Новая квартира",
+  "price": 50000,
+  "rooms": 2,
+  "districtId": 1,
+  "address": "Ташкент"
+}
+### Проверка серверной валидации: короткий заголовок
+POST {{host}}/api/listings
+Content-Type: application/json
+
+{
+  "title": "Дом",
+  "price": 45000,
+  "rooms": 2,
+  "districtId": 1,
+  "address": "Тестовый адрес"
+}
