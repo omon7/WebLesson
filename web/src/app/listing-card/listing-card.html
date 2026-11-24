@@ -1,10 +1,27 @@
+
 <article class="card" [class.active]="active()" (click)="choose()">
   <header>
     <h3>{{ listing().title }}</h3>
 
-    @if (isCheap()) {
-      <span class="badge">выгодно</span>
-    }
+    <div class="badges">
+      @if (isCheap()) {
+        <span class="badge">выгодно</span>
+      }
+
+      @if (isNew()) {
+        <span class="badge new-badge">новое</span>
+      }
+
+      <button
+        type="button"
+        class="favorite-button"
+        [class.is-favorite]="favorite()"
+        [attr.aria-pressed]="favorite()"
+        [attr.aria-label]="favorite() ? 'Убрать из избранного' : 'Добавить в избранное'"
+        (click)="toggleFavorite($event)">
+        {{ favorite() ? '★' : '☆' }}
+      </button>
+    </div>
   </header>
 
   <p class="muted">

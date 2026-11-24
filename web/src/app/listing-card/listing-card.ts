@@ -11,9 +11,19 @@ import { Listing } from '../models/listing';
 export class ListingCard {
   listing = input.required<Listing>();
   active = input(false);
+  favorite = input(false);
+
   selected = output<number>();
+  toggled = output<number>();
 
   isCheap = computed(() => this.listing().price < 40000);
+
+  isNew = computed(() => {
+    const createdAt = new Date(this.listing().createdAt).getTime();
+    const age = Date.now() - createdAt;
+
+    return age >= 0 && age < 7 * 24 * 60 * 60 * 1000;
+  });
 
   roomsLabel = computed(() => {
     const r = this.listing().rooms;
@@ -22,5 +32,10 @@ export class ListingCard {
 
   choose() {
     this.selected.emit(this.listing().id);
+  }
+
+  toggleFavorite(event: Event) {
+    event.stopPropagation();
+    this.toggled.emit(this.listing().id);
   }
 }

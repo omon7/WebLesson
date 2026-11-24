@@ -4,6 +4,7 @@ import { ListingFilter as FilterValue } from '../models/listing';
 export interface DistrictOption {
   id: number;
   name: string;
+  count: number;
 }
 
 @Component({
@@ -17,6 +18,8 @@ export class ListingFilter {
 
   districtId = signal<number | null>(null);
   maxPrice = signal<number | null>(null);
+  sort = signal<FilterValue['sort']>('newest');
+  favoritesOnly = signal(false);
 
   onDistrict(event: Event) {
     const value = (event.target as HTMLSelectElement).value;
@@ -30,16 +33,32 @@ export class ListingFilter {
     this.emit();
   }
 
+  onSort(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    this.sort.set(value as FilterValue['sort']);
+    this.emit();
+  }
+
+  onFavoritesOnly(event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.favoritesOnly.set(checked);
+    this.emit();
+  }
+
   reset() {
     this.districtId.set(null);
     this.maxPrice.set(null);
+    this.sort.set('newest');
+    this.favoritesOnly.set(false);
     this.emit();
   }
 
   private emit() {
     this.filterChange.emit({
       districtId: this.districtId(),
-      maxPrice: this.maxPrice()
+      maxPrice: this.maxPrice(),
+      sort: this.sort(),
+      favoritesOnly: this.favoritesOnly()
     });
   }
 }

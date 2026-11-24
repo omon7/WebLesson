@@ -1,3 +1,4 @@
+
 import { Component, input, output } from '@angular/core';
 import { Listing } from '../models/listing';
 import { ListingCard } from '../listing-card/listing-card';
@@ -12,5 +13,8 @@ export class ListingList {
   listings = input.required<Listing[]>();
   selectedId = input<number | null>(null);
   total = input<number>(0);
+  favorites = input<Set<number>>(new Set<number>());
+
   selected = output<number>();
+  toggled = output<number>();
 }

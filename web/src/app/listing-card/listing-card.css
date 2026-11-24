@@ -1,3 +1,4 @@
+
 :host {
   display: block;
 }
@@ -32,6 +33,12 @@ h3 {
   font-size: 1.05rem;
 }
 
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .badge {
   background: #dcfce7;
   color: #166534;
@@ -39,6 +46,24 @@ h3 {
   padding: 2px 8px;
   border-radius: 999px;
   white-space: nowrap;
+}
+
+.new-badge {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.favorite-button {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 1.4rem;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.favorite-button.is-favorite {
+  color: #eab308;
 }
 
 .price {

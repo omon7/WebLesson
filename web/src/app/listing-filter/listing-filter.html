@@ -1,17 +1,19 @@
+
 <form class="filter" (submit)="$event.preventDefault()">
   <label>
     Район
-<select
-  [value]="districtId() ?? ''"
-  (change)="onDistrict($event)"
-  id="districtId"
-  name="districtId">
-        <option value="">Все районы</option>
+    <select
+      [value]="districtId() ?? ''"
+      (change)="onDistrict($event)"
+      id="districtId"
+      name="districtId">
+      <option value="">Все районы</option>
       @for (d of districts(); track d.id) {
-        <option [value]="d.id">{{ d.name }}</option>
+        <option [value]="d.id">
+          {{ d.name }} ({{ d.count }})
+        </option>
       }
     </select>
-    
   </label>
 
   <label>
@@ -23,8 +25,29 @@
       placeholder="любая"
       [value]="maxPrice() ?? ''"
       (input)="onPrice($event)"
-      id="maxPrice" name="maxPrice"
-    />
+      id="maxPrice"
+      name="maxPrice" />
+  </label>
+
+  <label>
+    Сортировка
+    <select
+      [value]="sort()"
+      (change)="onSort($event)"
+      id="sort"
+      name="sort">
+      <option value="newest">Сначала новые</option>
+      <option value="price-asc">По цене ↑</option>
+      <option value="price-desc">По цене ↓</option>
+    </select>
+  </label>
+
+  <label class="favorites-filter">
+    <input
+      type="checkbox"
+      [checked]="favoritesOnly()"
+      (change)="onFavoritesOnly($event)" />
+    Только избранное
   </label>
 
   <button type="button" (click)="reset()">Сбросить</button>

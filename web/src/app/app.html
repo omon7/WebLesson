@@ -1,18 +1,22 @@
 <main class="container">
   <h1>Объявления о квартирах</h1>
-<button type="button" (click)="addTestListing()">
-  Добавить тестовое объявление
-</button>
+
+  <button type="button" (click)="addTestListing()">
+    Добавить тестовое объявление
+  </button>
+
   <app-listing-filter
     [districts]="districts()"
     (filterChange)="onFilter($event)" />
 
   <div class="layout" [class.with-panel]="selectedListing() !== null">
     <app-listing-list
-      [listings]="filtered()"
+      [listings]="sorted()"
       [total]="listings().length"
       [selectedId]="selectedId()"
-      (selected)="onSelect($event)" />
+      [favorites]="favorites()"
+      (selected)="onSelect($event)"
+      (toggled)="toggleFavorite($event)" />
 
     @if (selectedListing(); as item) {
       <app-listing-details
