@@ -19,9 +19,12 @@
       (toggled)="toggleFavorite($event)" />
 
     @if (selectedListing(); as item) {
-      <app-listing-details
-        [listing]="item"
-        (closed)="selectedId.set(null)" />
+    <app-listing-details
+  [listing]="item"
+  (closed)="selectedId.set(null)"
+  (deleteRequested)="deleteListing($event)"
+  (updateRequested)="updateListing($event)"
+/>
     }
   </div>
 </main>

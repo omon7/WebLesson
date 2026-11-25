@@ -4,32 +4,82 @@
     <button type="button" (click)="closed.emit()" aria-label="Закрыть">✕</button>
   </header>
 
-  <dl>
-    <dt>Район</dt>
-    <dd>{{ listing().districtName }}</dd>
+  @if (editing()) {
+    <div class="edit-form">
+      <label>
+        Название
+        <input
+          type="text"
+          [value]="editTitle()"
+          (input)="editTitle.set($any($event.target).value)"
+        />
+      </label>
 
-    <dt>Комнат</dt>
-    <dd>
-      @switch (listing().rooms) {
-        @case (1) { студия }
-        @case (2) { две комнаты }
-        @case (3) { три комнаты }
-        @default { {{ listing().rooms }} комнат }
+      <label>
+        Цена
+        <input
+          type="number"
+          [value]="editPrice()"
+          (input)="editPrice.set(+$any($event.target).value)"
+        />
+      </label>
+
+      <label>
+        Количество комнат
+        <input
+          type="number"
+          min="1"
+          [value]="editRooms()"
+          (input)="editRooms.set(+$any($event.target).value)"
+        />
+      </label>
+
+      <label>
+        Адрес
+        <input
+          type="text"
+          [value]="editAddress()"
+          (input)="editAddress.set($any($event.target).value)"
+        />
+      </label>
+
+      <button type="button" (click)="saveEdit()">Сохранить</button>
+      <button type="button" (click)="cancelEdit()">Отмена</button>
+    </div>
+  } @else {
+    <dl>
+      <dt>Район</dt>
+      <dd>{{ listing().districtName }}</dd>
+
+      <dt>Комнат</dt>
+      <dd>
+        @switch (listing().rooms) {
+          @case (1) { студия }
+          @case (2) { две комнаты }
+          @case (3) { три комнаты }
+          @default { {{ listing().rooms }} комнат }
+        }
+      </dd>
+
+      <dt>Цена</dt>
+      <dd>{{ listing().price | number:'1.0-0' }} у.е.</dd>
+
+      <dt>За комнату</dt>
+      <dd>{{ perRoom() | number:'1.0-0' }} у.е.</dd>
+
+      <dt>Опубликовано</dt>
+      <dd>{{ listing().createdAt | date:'dd.MM.yyyy HH:mm' }}</dd>
+
+      @if (listing().address; as address) {
+        <dt>Адрес</dt>
+        <dd>{{ address }}</dd>
       }
-    </dd>
+    </dl>
 
-    <dt>Цена</dt>
-    <dd>{{ listing().price | number:'1.0-0' }} у.е.</dd>
+    <button type="button" (click)="startEdit()">Изменить объявление</button>
 
-    <dt>За комнату</dt>
-    <dd>{{ perRoom() | number:'1.0-0' }} у.е.</dd>
-
-    <dt>Опубликовано</dt>
-    <dd>{{ listing().createdAt | date:'dd.MM.yyyy HH:mm' }}</dd>
-
-    @if (listing().address; as address) {
-      <dt>Адрес</dt>
-      <dd>{{ address }}</dd>
-    }
-  </dl>
+    <button type="button" class="delete-button" (click)="deleteListing()">
+      Удалить объявление
+    </button>
+  }
 </aside>
